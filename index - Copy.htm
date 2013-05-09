@@ -1,0 +1,306 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>Space War v.1.0</title>
+	<style>
+		body {
+			margin-left: 25%;
+			margin-right:30%;
+			padding: 0;
+			background:url('wallpaper.jpg') no-repeat center;
+			background-color:#000;
+		   	cursor:none;
+		}
+		#Pause{
+		float:left;
+		margin-left:-20%;
+		}
+	</style>
+	<script src="pixi.js"></script>
+	<script src="WebGLRenderer.js"></script>
+</head>
+<body>
+
+<div id="Pause">
+<img  src="pause.png" alt="Smiley face" height="42" width="42" onclick="Pause();">
+</div>
+<img id="start" src="play.png" alt="Smiley face" style="margin-left:15%;position:fixed;margin-top:15%;" onclick="Game(50,800,10);">
+<label id="Score" title="0" style="position:fixed;color:white;font-size:50px;visibility:hidden;margin-left:25%;"></label>
+<audio id="audiotag1" src="Themeoftheuniverse.mp3" preload="auto"></audio>
+<audio id="sound" src="Themeoftheuniverse.ogg" controls autoplay="1" style="top=3000;"></audio>
+<script>
+   var MoveFlag = true;
+   var CreateEnemyFlag = true;
+   var ShotFlag = true;
+   var Sound = 1;
+   var Playing = 1;
+   var Timer;
+   
+   function Pause(){
+      if(Playing == 1){
+ 	 MoveFlag = false;
+	 CreateEnemyFlag = false;
+	 ShotFlag = false;
+	 Playing = 0 ;
+	 }
+	 else{
+	 MoveFlag = true;
+	 CreateEnemyFlag = true;
+	 ShotFlag = true;
+	 Playing = 1;
+	 }
+   }
+
+   function SoundOff(){
+     if(Sound == 1){
+              document.getElementById('audiotag1').pause();
+              Sound = 0;
+              document.getElementById("image").src="Sound_Off.png";
+     }
+     else{
+              document.getElementById('audiotag1').play();
+              Sound = 1;
+              document.getElementById("image").src="Sound_on.png";
+     }
+   }
+
+   function Game(EnemyMovement,Speed,Increase){
+   document.getElementById('audiotag1').play();
+   document.getElementById('Score').style.visibility="visible";
+   document.getElementById('Score').innerHTML="0";
+   document.getElementById('start').style.visibility="hidden";
+
+//CREATE OBJECTS//////////
+	// create an new instance of a pixi stage
+	var Score = 0;
+	var Lifes = 5;
+//	var Speed = 800;
+//	var EnemyMovement = 50;
+	var interactive = true;
+	var stage = new PIXI.Stage(0x000000,interactive);
+	var background1=PIXI.Sprite.fromImage("background.jpg");
+   	stage.addChild(background1);
+	// create a renderer instance
+	var renderer = PIXI.autoDetectRenderer(screen.width / 2, (screen.height - 130));
+
+	// add the renderer view element to the DOM
+	document.body.appendChild(renderer.view);
+
+	requestAnimFrame( animate );
+
+	// create a texture from an image path
+	var texture = PIXI.Texture.fromImage("SpaceShip.png");
+        var Life = PIXI.Texture.fromImage("life.png");
+        var ShotTexture = PIXI.Texture.fromImage("shot.png");
+        var EnemyTexture =  PIXI.Texture.fromImage("enemy.png");
+        var EnemyTexture2 = PIXI.Texture.fromImage("enemy_2.png");
+        var EnemyTexture3 = PIXI.Texture.fromImage("enemy_3.png");
+ 	var GameOver = PIXI.Texture.fromImage("gameover.png");
+
+	// create a new Sprite using the texture
+	var ship = new PIXI.Sprite(texture);
+        var Life1 = new PIXI.Sprite(Life);
+        var Life2 = new PIXI.Sprite(Life);
+        var Life3 = new PIXI.Sprite(Life);
+        var Life4 = new PIXI.Sprite(Life);
+        var Life5 = new PIXI.Sprite(Life);
+
+   
+	
+	// center the sprites anchor point
+	ship.anchor.x = 0.5;
+	ship.anchor.y = 0.5;
+
+	// move the sprite the center of the screen
+	ship.position.x = 200;
+	ship.position.y = (screen.height - 250);
+        Life1.position.x = 650;
+        Life1.position.y = 10;
+        Life2.position.x = 620;
+        Life2.position.y = 10;
+        Life3.position.x = 590;
+        Life3.position.y = 10;
+        Life4.position.x = 560;
+        Life4.position.y = 10;
+        Life5.position.x = 530;
+        Life5.position.y = 10;
+
+        // make the button interactive..
+        ship.setInteractive(true);
+
+        window.onmousemove = handleMouseMove;
+        function handleMouseMove(event) {
+              event = event || window.event; // IE-ism
+              // event.clientX and event.clientY contain the mouse position
+        }
+
+        var Shots = [];
+        PIXI.InteractionManager.prototype.onMouseDown = function(event)
+        {
+          if(ShotFlag){
+             var Shot = new PIXI.Sprite(ShotTexture);
+             Shot.position.x = ship.position.x - 10;
+             Shot.position.y = ship.position.y - 50;
+             Shots.push(Shot);
+             stage.addChild(Shot);
+          }
+        }
+
+        var Enemies = [];
+        function addEnemies()
+        {
+         if(CreateEnemyFlag){
+                 var X = Math.floor((Math.random()*(renderer.width)));
+                 var Enemy =  new PIXI.Sprite(EnemyTexture);
+                 Enemy.position.x = (X - 10);
+                 Enemy.position.y = -10;
+                 Enemies.push(Enemy);
+                 stage.addChild(Enemy);
+
+                 if(Score >=200){
+                   X = Math.floor((Math.random()*(renderer.width-100)));
+                   var Enemy2 =  new PIXI.Sprite(EnemyTexture2);
+                   Enemy2.position.x = (X - 10);
+                   Enemy2.position.y = -10;
+                   Enemies.push(Enemy2);
+		   stage.addChild(Enemy2);
+
+                 }
+ 		   if(Score >=300){
+                   X = Math.floor((Math.random()*(renderer.width-200)));
+		   var Enemy3 =  new PIXI.Sprite(EnemyTexture3);
+                   Enemy3.position.x = (X - 15);
+                   Enemy3.position.y = -15;
+		   Enemies.push(Enemy3);
+		   stage.addChild(Enemy3);
+                 }
+
+
+             }
+        }
+
+
+        function ShotCollision(){
+	         for(var i = 0;i< Enemies.length;i++){
+	                 for(var j = 0;j< Shots.length;j++){
+	                  var Shot_A = Shots[j];
+	                  var Enemy_A = Enemies[i];
+	                  //alert(Shot_A.position.y+ ' ' + Enemy_A.position.y);
+	                         if((Shot_A.position.x < (Enemy_A.position.x + Enemy_A.width)) && ((Shot_A.position.x + Shot_A.width) > Enemy_A.position.x) && (Shot_A.position.y < (Enemy_A.position.y + Enemy_A.height)) && ((Shot_A.position.y + Shot_A.height) > Enemy_A.position.y)){
+                                         Score += Increase;
+                                         document.getElementById('Score').innerHTML=Score;
+                                         Enemies.splice(i, 1);
+                                         Shots.splice(j, 1);
+                                         stage.removeChild(Shot_A);
+	                                 stage.removeChild(Enemy_A);
+                                 }
+	                 }
+	         }
+	}
+
+       function ShipCollision()
+       {
+	         for(var i = 0;i< Enemies.length;i++){
+	                  var Enemy_A = Enemies[i];
+	                         if((ship.position.x < (Enemy_A.position.x + Enemy_A.width)) && ((ship.position.x + ship.width) > Enemy_A.position.x) && (ship.position.y < (Enemy_A.position.y + Enemy_A.height)) && ((ship.position.y + ship.height) > Enemy_A.position.y)){
+                                         if(Lifes == 5){
+                                                  stage.removeChild(Life1);
+                                         }else if(Lifes == 4){
+                                               stage.removeChild(Life2);
+                               		 }else if(Lifes == 3){
+                                               stage.removeChild(Life3);
+                                 	 }else if(Lifes == 2){
+                                               stage.removeChild(Life4);
+                                         }
+                                         
+                                         else if(Lifes == 1){
+				
+					 stage.removeChild(ship);
+					 clearInterval(Score);
+                                         Score = 0;
+                                         stage.addChild(Life1);
+                                         stage.addChild(Life2);
+                                         stage.addChild(Life3);
+                                         stage.addChild(Life4);
+                                         stage.addChild(Life4);
+                                         stage.addChild(ship);
+                                         Lifes = 5;
+                                         }
+					 
+				
+                                         Lifes -= 1;
+                                         Enemies.splice(i, 1);
+	                                 stage.removeChild(Enemy_A);
+                                 }
+	                 }
+	}
+        
+
+        PIXI.InteractionManager.prototype.onMouseMove = function(event)
+        {
+        if(MoveFlag){
+          var positionX = (event.clientX - 300);
+          if(positionX < 60){
+             ship.position.x = 60;
+          }
+          else if (positionX > 630){
+             ship.position.x = 630;
+          }
+          else{
+             ship.position.x = positionX;
+          }
+          }
+        }
+
+        function MoveEnemy(){
+        if(MoveFlag){
+            for(var i =0;i<Enemies.length;i++){
+              var b = Enemies[i];
+              b.position.y +=10;
+            }
+            }
+        }
+
+        function ScoreResult(){
+        	  if(Score >= 200){
+                                  EnemyMovement = 10;
+                                  Speed = 150;
+	         }
+        }
+	function StopTimer()
+	{
+	clearInterval(Timer);
+	}
+
+	stage.addChild(ship);
+        stage.addChild(Life1);
+        stage.addChild(Life2);
+        stage.addChild(Life3);
+        stage.addChild(Life4);
+        stage.addChild(Life5);
+
+
+        var Timer = setInterval ( addEnemies, Speed );
+	
+        setInterval ( MoveEnemy,EnemyMovement);
+        setInterval ( ShotCollision ,30);
+        setInterval ( ShipCollision, 30);
+
+	function animate() {
+	    requestAnimFrame( animate );
+            for(var i =0;i<Shots.length;i++){
+              var b = Shots[i];
+              b.position.y -=5;
+            }
+
+             //setInterval ( addEnemies, Speed );
+            ScoreResult();
+	    // render the stage
+               renderer.render(stage);
+	}
+	}
+	
+
+</script>
+</body>
+</html>
